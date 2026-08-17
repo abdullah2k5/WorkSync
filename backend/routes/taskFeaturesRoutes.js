@@ -1,0 +1,16 @@
+const express = require('express');
+const { authenticate, authorize } = require('../middleware/authMiddleware');
+const asyncHandler = require('../utils/asyncHandler');
+const controller = require('../controllers/taskFeaturesController');
+const router = express.Router();
+router.use(authenticate);
+router.get('/labels', authorize('admin', 'manager', 'employee'), asyncHandler(controller.allLabels));
+router.post('/labels', authorize('admin', 'manager'), asyncHandler(controller.createLabel));
+router.get('/tasks/:taskId/labels', asyncHandler(controller.labels));
+router.post('/tasks/:taskId/labels/:labelId', asyncHandler(controller.assignLabel));
+router.delete('/tasks/:taskId/labels/:labelId', asyncHandler(controller.removeLabel));
+router.get('/tasks/:taskId/subtasks', asyncHandler(controller.subtasks));
+router.post('/tasks/:taskId/subtasks', asyncHandler(controller.addSubtask));
+router.patch('/tasks/:taskId/subtasks/:subtaskId', asyncHandler(controller.updateSubtask));
+router.delete('/tasks/:taskId/subtasks/:subtaskId', asyncHandler(controller.deleteSubtask));
+module.exports = router;
