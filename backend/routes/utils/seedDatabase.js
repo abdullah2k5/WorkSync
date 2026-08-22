@@ -3,9 +3,10 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const { databasePath } = require('../config/env');
 
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-const db = require('../config/database');
-db.exec(`
+function initializeCoreSchema() {
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  const db = require('../config/database');
+  db.exec(`
   CREATE TABLE IF NOT EXISTS departments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -40,45 +41,53 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department_id);
   CREATE INDEX IF NOT EXISTS idx_employees_manager ON employees(manager_id);
 `);
+  return db;
+}
 
-const departments = [
+const demoDepartments = [
   ['Human Resources', 'People operations and workplace support.'],
   ['Engineering', 'Software development and technical operations.'],
   ['Operations', 'Business operations and delivery.']
 ];
-const addDepartment = db.prepare('INSERT OR IGNORE INTO departments (name, description) VALUES (?, ?)');
-departments.forEach((department) => addDepartment.run(...department));
-
-const accounts = [
+const demoAccounts = [
   ['admin@worksync.com', 'Admin@123', 'admin', 'WS-001', 'Amina', 'Khan', 'Human Resources', 'System Administrator'],
   ['manager@worksync.com', 'Manager@123', 'manager', 'WS-002', 'Bilal', 'Ahmed', 'Engineering', 'Engineering Manager'],
   ['employee@worksync.com', 'Employee@123', 'employee', 'WS-003', 'Sara', 'Ali', 'Engineering', 'Software Developer']
 ];
-const findUser = db.prepare('SELECT id FROM users WHERE email = ?');
-const addUser = db.prepare('INSERT INTO users (email, password, role) VALUES (?, ?, ?)');
-const findDepartment = db.prepare('SELECT id FROM departments WHERE name = ?');
-const addEmployee = db.prepare(`INSERT OR IGNORE INTO employees
-  (user_id, employee_id, first_name, last_name, department_id, manager_id, job_position, joining_date)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
 
-function seed() {
+function seedDemoData() {
+  const db = initializeCoreSchema();
+  const addDepartment = db.prepare('INSERT OR IGNORE INTO departments (name, description) VALUES (?, ?)');
+  const findUser = db.prepare('SELECT id FROM users WHERE email = ?');
+  const addUser = db.prepare('INSERT INTO users (email, password, role) VALUES (?, ?, ?)');
+  const findDepartment = db.prepare('SELECT id FROM departments WHERE name = ?');
+  const addEmployee = db.prepare(`INSERT OR IGNORE INTO employees
+    (user_id, employee_id, first_name, last_name, department_id, manager_id, job_position, joining_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+
+  demoDepartments.forEach((department) => addDepartment.run(...department));
   db.exec('BEGIN');
   try {
-  for (const [email, password, role, employeeId, firstName, lastName, department, position] of accounts) {
-    let user = findUser.get(email);
-    if (!user) {
-      addUser.run(email, bcrypt.hashSync(password, 12), role);
-      user = findUser.get(email);
+    for (const [email, password, role, employeeId, firstName, lastName, department, position] of demoAccounts) {
+      let user = findUser.get(email);
+      if (!user) {
+        addUser.run(email, bcrypt.hashSync(password, 12), role);
+        user = findUser.get(email);
+      }
+      const manager = role === 'employee' ? findUser.get('manager@worksync.com') : null;
+      const managerEmployee = manager ? db.prepare('SELECT id FROM employees WHERE user_id = ?').get(manager.id) : null;
+      addEmployee.run(user.id, employeeId, firstName, lastName, findDepartment.get(department).id, managerEmployee?.id || null, position, '2026-01-01');
     }
-    const manager = role === 'employee' ? findUser.get('manager@worksync.com') : null;
-    const managerEmployee = manager ? db.prepare('SELECT id FROM employees WHERE user_id = ?').get(manager.id) : null;
-    addEmployee.run(user.id, employeeId, firstName, lastName, findDepartment.get(department).id, managerEmployee?.id || null, position, '2026-01-01');
-  }
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
   }
 }
-seed();
-console.log(`Database initialized at ${databasePath}`);
+
+if (require.main === module) {
+  seedDemoData();
+  console.log(`Database initialized with demo data at ${databasePath}`);
+}
+
+module.exports = { initializeCoreSchema, seedDemoData };

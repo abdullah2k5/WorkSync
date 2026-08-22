@@ -1,4 +1,4 @@
-﻿const categories = [
+const categories = [
   'task_assignment',
   'task_comment',
   'blocker_created',

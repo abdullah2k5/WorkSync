@@ -1,15 +1,76 @@
 {
   "name": "worksync",
+  "version": "1.0.0",
+  "description": "WorkSync Task Management System",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "setup:db": "npm --prefix backend run setup:db",
     "dev:backend": "npm --prefix backend run dev",
-    "dev:frontend": "npm --prefix frontend run dev"
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:electron": "electron .",
+    "build:frontend": "npm --prefix frontend run build",
+    "prep:backend": "npm --prefix backend install --omit=dev",
+    "start": "electron .",
+    "dist": "npm run build:frontend && npm run prep:backend && electron-builder"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3",
     "wait-on": "^9.1.0"
+  },
+  "build": {
+    "appId": "com.worksync.app",
+    "productName": "WorkSync",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "frontend/dist/spa",
+        "to": "frontend/dist/spa"
+      },
+      {
+        "from": ".env",
+        "to": ".env"
+      },
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!node_modules/**",
+          "!test/**",
+          "!TESTING.md",
+          "!.env"
+        ]
+      },
+      {
+        "from": "backend/node_modules",
+        "to": "backend/node_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    }
   }
 }

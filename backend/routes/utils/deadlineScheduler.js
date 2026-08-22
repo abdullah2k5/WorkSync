@@ -7,7 +7,7 @@ function startDeadlineScheduler() {
   if (started) return;
   started = true;
   const run = () => {
-    processDeadlineNotifications().catch((error) => console.error('Deadline scheduler failed', error));
+    try { processDeadlineNotifications(); } catch (error) { console.error('Deadline scheduler failed', error); }
   };
   run();
   timer = setInterval(run, 60 * 60 * 1000);
