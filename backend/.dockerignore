@@ -1,0 +1,22 @@
+# Never bake secrets or local state into the image.
+.env
+.env.*
+
+# Dependencies are installed inside the image.
+node_modules
+
+# Logs and local artifacts.
+*.log
+api-flow.log
+
+# Tests and docs are not needed at runtime.
+test
+TESTING.md
+
+# Docker files themselves.
+Dockerfile
+.dockerignore
+
+# Git metadata.
+.git
+.gitignore
