@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const { jwtSecret } = require('../config/env');
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 
 const {
   findByEmail,

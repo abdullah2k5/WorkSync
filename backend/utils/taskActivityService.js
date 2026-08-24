@@ -1,4 +1,4 @@
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 
 async function createTaskActivity({
   taskId,

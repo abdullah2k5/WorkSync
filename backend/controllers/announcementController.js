@@ -1,4 +1,4 @@
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 const AppError = require('../utils/AppError');
 
 const priorities = ['normal', 'important', 'urgent'];

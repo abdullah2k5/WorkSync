@@ -1,5 +1,5 @@
 
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 const { emitNotification } = require('./notificationStream');
 
 const categoryFor = (type, title) => {

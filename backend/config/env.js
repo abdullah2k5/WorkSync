@@ -29,8 +29,10 @@ module.exports = {
       .map((origin) => origin.trim())
       .filter(Boolean),
 
-  // Keep SQLite configuration temporarily for rollback/reference.
-  // The application has NOT been switched yet.
+  // Legacy SQLite path. No longer used by live application code; retained
+  // because the SQLite-based test suite (backend/test/workflows.test.js)
+  // sets DATABASE_PATH, and routes/utils/seedDatabase.js references it.
+  // Safe to remove once those are migrated or retired.
   databasePath:
     process.env.DATABASE_PATH ||
     path.join(

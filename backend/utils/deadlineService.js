@@ -1,4 +1,4 @@
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 const { notifyEmployee } = require('./notificationService');
 
 function localDateParts(date = new Date()) {

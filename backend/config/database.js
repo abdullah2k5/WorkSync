@@ -2,29 +2,62 @@ const { Pool } = require('pg');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Load the project root .env file
+// Load the project root .env file.
+// On Koyeb, environment variables are injected directly,
+// so this does not interfere with cloud configuration.
 dotenv.config({
   path: path.join(__dirname, '..', '..', '.env'),
 });
 
-console.log('========================================');
-console.log('[DATABASE] Connecting to PostgreSQL');
-console.log('[DATABASE] Host:', process.env.PGHOST || 'localhost');
-console.log('[DATABASE] Port:', process.env.PGPORT || 5432);
-console.log('[DATABASE] Database:', process.env.PGDATABASE || 'worksync');
-console.log('[DATABASE] User:', process.env.PGUSER || 'postgres');
-console.log('========================================');
+const isProduction = process.env.NODE_ENV === 'production';
+const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
 
-const pool = new Pool({
-  host: process.env.PGHOST || 'localhost',
-  port: Number(process.env.PGPORT || 5432),
-  database: process.env.PGDATABASE || 'worksync',
-  user: process.env.PGUSER || 'postgres',
-  password: process.env.PGPASSWORD,
-});
+let poolConfig;
+
+if (hasDatabaseUrl) {
+  // Cloud / DATABASE_URL configuration
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+
+    // Cloud PostgreSQL providers such as Supabase
+    // commonly require SSL.
+    ...(isProduction && {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
+  };
+
+  console.log('========================================');
+  console.log('[DATABASE] Configuration: DATABASE_URL');
+  console.log('[DATABASE] Environment:', process.env.NODE_ENV || 'development');
+  console.log('========================================');
+} else {
+  // Local PostgreSQL configuration
+  poolConfig = {
+    host: process.env.PGHOST || 'localhost',
+    port: Number(process.env.PGPORT || 5432),
+    database: process.env.PGDATABASE || 'worksync',
+    user: process.env.PGUSER || 'postgres',
+    password: process.env.PGPASSWORD,
+  };
+
+  console.log('========================================');
+  console.log('[DATABASE] Configuration: local PostgreSQL');
+  console.log('[DATABASE] Host:', poolConfig.host);
+  console.log('[DATABASE] Port:', poolConfig.port);
+  console.log('[DATABASE] Database:', poolConfig.database);
+  console.log('[DATABASE] User:', poolConfig.user);
+  console.log('========================================');
+}
+
+const pool = new Pool(poolConfig);
 
 pool.on('error', (error) => {
-  console.error('[DATABASE] Unexpected PostgreSQL pool error:', error);
+  console.error(
+    '[DATABASE] Unexpected PostgreSQL pool error:',
+    error
+  );
 });
 
 async function testConnection() {
@@ -36,8 +69,14 @@ async function testConnection() {
     console.log('[DATABASE] PostgreSQL connected successfully');
     console.log('[DATABASE] Database:', result.rows[0].database);
     console.log('[DATABASE] User:', result.rows[0].user);
+
+    return result.rows[0];
   } catch (error) {
-    console.error('[DATABASE] PostgreSQL connection failed:', error.message);
+    console.error(
+      '[DATABASE] PostgreSQL connection failed:',
+      error.message
+    );
+
     throw error;
   }
 }

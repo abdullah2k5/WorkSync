@@ -1,5 +1,5 @@
 
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 
 const userStreams = new Map();
 

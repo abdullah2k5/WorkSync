@@ -1,4 +1,4 @@
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 const bcrypt = require('bcrypt');
 const AppError = require('../utils/AppError');
 const { generateTemporaryPassword } = require('../utils/temporaryPassword');

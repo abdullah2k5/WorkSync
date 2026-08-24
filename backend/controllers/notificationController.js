@@ -1,5 +1,5 @@
 
-const pool = require('../config/postgres');
+const pool = require('../config/database');
 const AppError = require('../utils/AppError');
 const { emitUnreadCount } = require('../utils/notificationStream');
 
