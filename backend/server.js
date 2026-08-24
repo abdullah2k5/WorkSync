@@ -6,7 +6,7 @@ const { startDeadlineScheduler } = require('./utils/deadlineScheduler');
 
 require('./utils/notificationPreferenceSchema');
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`WorkSync API listening on port ${port}`);
   startDeadlineScheduler();
 });
