@@ -3,8 +3,8 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 // Load the project root .env file.
-// On Koyeb, environment variables are injected directly,
-// so this does not interfere with cloud configuration.
+// On cloud hosting (Back4App etc.), environment variables are injected
+// directly, so this does not interfere with cloud configuration.
 dotenv.config({
   path: path.join(__dirname, '..', '..', '.env'),
 });
@@ -28,9 +28,20 @@ if (hasDatabaseUrl) {
     }),
   };
 
+  // Safe diagnostics: never log the connection string itself,
+  // only the non-secret host and whether SSL is active.
+  let databaseHost = '(unparsable)';
+  try {
+    databaseHost = new URL(process.env.DATABASE_URL).hostname;
+  } catch {
+    // Keep placeholder; never fall back to printing the URL.
+  }
+
   console.log('========================================');
   console.log('[DATABASE] Configuration: DATABASE_URL');
   console.log('[DATABASE] Environment:', process.env.NODE_ENV || 'development');
+  console.log('[DATABASE] Host:', databaseHost);
+  console.log('[DATABASE] SSL:', isProduction ? 'enabled' : 'disabled');
   console.log('========================================');
 } else {
   // Local PostgreSQL configuration
@@ -71,7 +82,7 @@ async function testConnection() {
     console.log('[DATABASE] User:', result.rows[0].user);
 
     return result.rows[0];
-  } catch (error) {
+  } catch (error) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     console.error(
       '[DATABASE] PostgreSQL connection failed:',
       error.message

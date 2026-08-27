@@ -11,3 +11,9 @@ frontend/.quasar/
 *.log
 
 *.backup
+
+frontend/.env.production
+
+# Local scratch/test copy of the project (contains its own .env + local db).
+# It is not part of the source tree and must never be committed.
+WorkSync-Test/

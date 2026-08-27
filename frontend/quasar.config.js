@@ -5,6 +5,6 @@ export default configure(() => ({
   css: ['app.scss'],
   extras: ['material-icons'],
   build: { vueRouterMode: 'history' },
-  devServer: { port: 9000, strictPort: true, open: false },
+  devServer: { port: 9001, strictPort: true, open: false },
   framework: { config: {}, plugins: ['Notify'] }
 }));

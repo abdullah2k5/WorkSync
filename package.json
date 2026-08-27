@@ -12,7 +12,7 @@
     "build:frontend": "npm --prefix frontend run build",
     "prep:backend": "npm --prefix backend install --omit=dev",
     "start": "electron .",
-    "dist": "npm run build:frontend && npm run prep:backend && electron-builder"
+    "dist": "npm run build:frontend && electron-builder"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
@@ -35,28 +35,6 @@
       {
         "from": "frontend/dist/spa",
         "to": "frontend/dist/spa"
-      },
-      {
-        "from": ".env",
-        "to": ".env"
-      },
-      {
-        "from": "backend",
-        "to": "backend",
-        "filter": [
-          "**/*",
-          "!node_modules/**",
-          "!test/**",
-          "!TESTING.md",
-          "!.env"
-        ]
-      },
-      {
-        "from": "backend/node_modules",
-        "to": "backend/node_modules",
-        "filter": [
-          "**/*"
-        ]
       }
     ],
     "win": {
